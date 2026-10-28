@@ -65,7 +65,7 @@ public final class PreviewModuleBootstrap extends CrateModuleBootstrap {
         this.bridge.requireAvailable(CoreServices.CRATES, cratesApi -> {
             cratesApi.data().registerExtension(componentContext.getDataExtension());
             cratesApi.editor().registerExtension(componentEditorContext.getEditorExtension());
-            cratesApi.commands().registerCommand(new CratePreviewCommand(viewService, dispatcher));
+            cratesApi.commands().registerCommand(new CratePreviewCommand(plugin, viewService, dispatcher));
             cratesApi.interaction().registerAction(new PreviewInteractAction(viewService, dispatcher));
         });
 

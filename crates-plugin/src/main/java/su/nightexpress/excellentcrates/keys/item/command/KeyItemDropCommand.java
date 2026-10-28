@@ -11,11 +11,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.command.KeyCommand;
 import su.nightexpress.excellentcrates.api.key.dispatcher.KeyMessageDispatcher;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
 import su.nightexpress.excellentcrates.core.lang.Lang;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.keys.item.KeyItemService;
 import su.nightexpress.excellentcrates.keys.lang.KeyLang;
 import su.nightexpress.excellentcrates.keys.permission.KeyPerms;
@@ -41,10 +43,12 @@ public class KeyItemDropCommand implements KeyCommand {
     private static final String ARGUMENT_Y      = "y";
     private static final String ARGUMENT_Z      = "z";
 
+    private final CratesPlugin         plugin;
     private final KeyItemService       itemService;
     private final KeyMessageDispatcher dispatcher;
 
-    public KeyItemDropCommand(KeyItemService itemService, KeyMessageDispatcher dispatcher) {
+    public KeyItemDropCommand(CratesPlugin plugin, KeyItemService itemService, KeyMessageDispatcher dispatcher) {
+        this.plugin = plugin;
         this.itemService = itemService;
         this.dispatcher = dispatcher;
     }
@@ -102,7 +106,7 @@ public class KeyItemDropCommand implements KeyCommand {
         itemStack.setAmount(amount);
 
         Location location = new Location(world, x, y, z);
-        world.dropItemNaturally(location, itemStack);
+        RegionTasks.runAt(this.plugin, location, () -> world.dropItemNaturally(location, itemStack));
 
         this.dispatcher.sendBase(sender, key, KeyLang.KEY_DROP_FEEDBACK, ctx -> ctx
             .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(amount))

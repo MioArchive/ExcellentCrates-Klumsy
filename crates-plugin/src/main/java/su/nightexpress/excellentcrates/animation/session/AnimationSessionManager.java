@@ -1,10 +1,11 @@
 package su.nightexpress.excellentcrates.animation.session;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -13,25 +14,25 @@ import su.nightexpress.excellentcrates.api.animation.AnimationInstance;
 @NullMarked
 public class AnimationSessionManager {
 
-    private final Map<UUID, AnimationInstance> sessions;
+    public record Session(AnimationInstance instance, Location location) {
+    }
+
+    private final Map<UUID, Session> sessions;
 
     public AnimationSessionManager() {
-        this.sessions = new HashMap<>();
+        this.sessions = new ConcurrentHashMap<>();
     }
 
     public void purgeStoppedSessions() {
-        this.sessions.values().removeIf(instance -> !instance.isRunning());
+        this.sessions.values().removeIf(session -> !session.instance().isRunning());
     }
 
-    public void stopSession(UUID playerId) {
-        AnimationInstance instance = this.sessions.remove(playerId);
-        if (instance != null) {
-            instance.stop();
-        }
+    public @Nullable Session removeSession(UUID playerId) {
+        return this.sessions.remove(playerId);
     }
 
-    public void registerSession(UUID playerId, AnimationInstance instance) {
-        this.sessions.put(playerId, instance);
+    public void registerSession(UUID playerId, AnimationInstance instance, Location location) {
+        this.sessions.put(playerId, new Session(instance, location));
     }
 
     public void unregisterSession(UUID playerId) {
@@ -39,15 +40,16 @@ public class AnimationSessionManager {
     }
 
     public @Nullable AnimationInstance getSession(UUID playerId) {
-        return this.sessions.get(playerId);
+        Session session = this.sessions.get(playerId);
+        return session == null ? null : session.instance();
     }
 
     public boolean hasSession(UUID playerId) {
-        AnimationInstance instance = this.sessions.get(playerId);
-        return instance != null && instance.isRunning();
+        Session session = this.sessions.get(playerId);
+        return session != null && session.instance().isRunning();
     }
 
-    public Set<AnimationInstance> getSessions() {
+    public Set<Session> getSessions() {
         return Set.copyOf(this.sessions.values());
     }
 }

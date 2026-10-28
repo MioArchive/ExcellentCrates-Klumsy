@@ -2,6 +2,8 @@ package su.nightexpress.excellentcrates.keys.balance;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -13,6 +15,7 @@ import su.nightexpress.engine.id.Identifier;
 import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.balance.IKeyBalance;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.keys.item.KeyItemService;
 import su.nightexpress.excellentcrates.keys.lang.KeyLang;
 import su.nightexpress.excellentcrates.keys.storage.db.KeyStorageCachedDataService;
@@ -84,13 +87,43 @@ public class KeyBalanceService {
         return new KeyBalance(physical, virtual, unclaimed);
     }
 
-    public CompletableFuture<IKeyBalance> getKeyBalanceAsync(UUID playerId, CrateKey key) {
-        Identifier keyId = key.getId();
-
+    /**
+     * Runs {@code online} on the player's region thread, or {@code offline} when the player is not online
+     * or leaves before the task runs. Inventories may only be touched from the owning thread.
+     */
+    private <T> CompletableFuture<T> withPlayer(UUID playerId, Function<Player, T> online, Supplier<CompletableFuture<T>> offline) {
         Player player = Players.getPlayer(playerId);
-        if (player != null) {
-            return CompletableFuture.completedFuture(this.getKeyBalance(player, key));
+        if (player == null) {
+            return offline.get();
         }
+
+        CompletableFuture<T> future = new CompletableFuture<>();
+        RegionTasks.runFor(this.plugin, player,
+            () -> {
+                try {
+                    future.complete(online.apply(player));
+                }
+                catch (Throwable throwable) {
+                    future.completeExceptionally(throwable);
+                }
+            },
+            () -> offline.get().whenComplete((result, throwable) -> {
+                if (throwable != null) future.completeExceptionally(throwable);
+                else future.complete(result);
+            })
+        );
+        return future;
+    }
+
+    public CompletableFuture<IKeyBalance> getKeyBalanceAsync(UUID playerId, CrateKey key) {
+        return this.withPlayer(playerId,
+            player -> this.getKeyBalance(player, key),
+            () -> this.getOfflineKeyBalanceAsync(playerId, key)
+        );
+    }
+
+    private CompletableFuture<IKeyBalance> getOfflineKeyBalanceAsync(UUID playerId, CrateKey key) {
+        Identifier keyId = key.getId();
 
         return this.storageService.loadAndCacheAsync(playerId, keyId, CacheStrategy.TEMPORARY)
             .thenApply(opt -> {
@@ -122,7 +155,10 @@ public class KeyBalanceService {
         if (!result.success()) {
             return result;
         }
-        storedKey.setUnclaimedAmount(0);
+        // Subtract instead of zeroing so an offline-path delivery landing meanwhile is kept.
+        synchronized (storedKey) {
+            storedKey.setUnclaimedAmount(Math.max(0, storedKey.getUnclaimedAmount() - unclaimed));
+        }
         this.storageService.markDirty(storedKey);
 
         return ActionResult.ok(KeyLang.KEY_REDEEM_FEEDBACK, ctx -> ctx
@@ -140,7 +176,9 @@ public class KeyBalanceService {
             StoredKey storedKey = this.storageService.getCachedOrCreate(
                 player.getUniqueId(), keyId, CacheStrategy.PERMANENT
             );
-            storedKey.setVirtualBalance(storedKey.getVirtualBalance() + absAmount);
+            synchronized (storedKey) {
+                storedKey.setVirtualBalance(storedKey.getVirtualBalance() + absAmount);
+            }
             this.storageService.markDirty(storedKey);
         }
         else {
@@ -155,7 +193,7 @@ public class KeyBalanceService {
             }
 
             keyItem.setAmount(absAmount);
-            Players.addItem(player, keyItem);
+            InventoryUtils.giveItem(player, keyItem);
         }
 
         return ActionResult.ok(KeyLang.KEY_GIVE_FEEDBACK, ctx -> ctx
@@ -175,7 +213,30 @@ public class KeyBalanceService {
      * @return the result of the action
      */
     public CompletableFuture<ActionResult> giveKeyAsync(UUID playerId, CrateKey key, int amount) {
-        Identifier keyId = key.getId();
+        if (key.getBase().isVirtual()) {
+            return this.storeKeyAsync(playerId, key, amount);
+        }
+
+        return this.withPlayer(playerId,
+            player -> this.addKey(player, key, amount),
+            () -> this.storeKeyAsync(playerId, key, amount)
+        );
+    }
+
+    /**
+     * Adds keys to an online player on their region thread, or stores them as virtual/unclaimed keys if the
+     * player leaves before that.
+     */
+    public CompletableFuture<ActionResult> addKeyAsync(Player player, CrateKey key, int amount) {
+        UUID playerId = player.getUniqueId();
+        return this.withPlayer(playerId,
+            online -> this.addKey(online, key, amount),
+            () -> this.storeKeyAsync(playerId, key, amount)
+        );
+    }
+
+    /** Adds to the stored virtual balance, or to the unclaimed amount for physical keys. */
+    private CompletableFuture<ActionResult> storeKeyAsync(UUID playerId, CrateKey key, int amount) {
         int absAmount = Math.abs(amount);
         boolean virtual = key.getBase().isVirtual();
 
@@ -183,28 +244,18 @@ public class KeyBalanceService {
             .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(absAmount))
         );
 
-        if (virtual) {
-            return this.storageService.updateDataAndCreateIfAbsentAsync(playerId, keyId, CacheStrategy.TEMPORARY,
-                storedKey -> {
-                    storedKey.setVirtualBalance(storedKey.getVirtualBalance() + absAmount);
-                    return success;
-                });
-        }
-        else {
-            // Player inventory access and item delivery must run on the server thread.
-            return CompletableFuture.supplyAsync(() -> {
-                Player player = Players.getPlayer(playerId);
-                if (player != null) {
-                    return CompletableFuture.completedFuture(this.addKey(player, key, absAmount));
-                }
-
-                return this.storageService.updateDataAndCreateIfAbsentAsync(playerId, keyId, CacheStrategy.TEMPORARY,
-                    storedKey -> {
+        return this.storageService.updateDataAndCreateIfAbsentAsync(playerId, key.getId(), CacheStrategy.TEMPORARY,
+            storedKey -> {
+                synchronized (storedKey) {
+                    if (virtual) {
+                        storedKey.setVirtualBalance(storedKey.getVirtualBalance() + absAmount);
+                    }
+                    else {
                         storedKey.setUnclaimedAmount(storedKey.getUnclaimedAmount() + absAmount);
-                        return success;
-                    });
-            }, this.plugin::runTask).thenCompose(result -> result);
-        }
+                    }
+                }
+                return success;
+            });
     }
 
     public ActionResult removeKey(Player player, CrateKey key, int amount) {
@@ -214,13 +265,12 @@ public class KeyBalanceService {
 
         if (virtual) {
             StoredKey storedKey = this.storageService.getCached(player.getUniqueId(), keyId).orElse(null);
-            if (storedKey == null || storedKey.getVirtualBalance() < absAmount) {
+            if (storedKey == null || !takeVirtualKeys(storedKey, absAmount)) {
                 return ActionResult.fail(KeyLang.KEY_REMOVE_NOT_ENOUGH, ctx -> ctx
                     .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(absAmount))
                 );
             }
 
-            storedKey.setVirtualBalance(Math.max(0, storedKey.getVirtualBalance() - absAmount));
             this.storageService.markDirty(storedKey);
         }
         else {
@@ -250,28 +300,32 @@ public class KeyBalanceService {
 
         if (virtual) {
             return this.storageService.updateDataIfExistsAsync(playerId, keyId, CacheStrategy.TEMPORARY, storedKey -> {
-                if (storedKey == null || storedKey.getVirtualBalance() < absAmount) {
-                    return notEnough;
-                }
-
-                storedKey.setVirtualBalance(Math.max(0, storedKey.getVirtualBalance() - absAmount));
-                return success;
+                return storedKey != null && takeVirtualKeys(storedKey, absAmount) ? success : notEnough;
             });
         }
-        else {
-            Player player = Players.getPlayer(playerId);
-            if (player != null) {
-                return CompletableFuture.completedFuture(this.removeKey(player, key, amount));
-            }
 
-            return this.storageService.updateDataIfExistsAsync(playerId, keyId, CacheStrategy.TEMPORARY, storedKey -> {
-                if (storedKey == null || storedKey.getUnclaimedAmount() < absAmount) {
-                    return notEnough;
+        return this.withPlayer(playerId,
+            player -> this.removeKey(player, key, amount),
+            () -> this.storageService.updateDataIfExistsAsync(playerId, keyId, CacheStrategy.TEMPORARY, storedKey -> {
+                if (storedKey == null) return notEnough;
+
+                synchronized (storedKey) {
+                    if (storedKey.getUnclaimedAmount() < absAmount) return notEnough;
+
+                    storedKey.setUnclaimedAmount(storedKey.getUnclaimedAmount() - absAmount);
                 }
-
-                storedKey.setUnclaimedAmount(Math.max(0, storedKey.getUnclaimedAmount() - absAmount));
                 return success;
-            });
+            })
+        );
+    }
+
+    // Balances are changed from player, global and database threads; check and subtract as one step.
+    private static boolean takeVirtualKeys(StoredKey storedKey, int amount) {
+        synchronized (storedKey) {
+            if (storedKey.getVirtualBalance() < amount) return false;
+
+            storedKey.setVirtualBalance(storedKey.getVirtualBalance() - amount);
+            return true;
         }
     }
 }

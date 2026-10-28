@@ -44,7 +44,7 @@ public class CrateOpenActionsBootstrapContext extends NamedBootstrapContext {
 
         this.dataExtension = new CrateOpeningComponentDataExtension();
         this.editorExtension = editorContext.extension;
-        this.pipelineExecutor = new CrateOpeningPipelineExecutor(cratePlaceholders);
+        this.pipelineExecutor = new CrateOpeningPipelineExecutor(plugin, cratePlaceholders);
         this.pipelineProcessor = new DefaultPipelineProcessor();
 
         this.addComponent(editorContext);

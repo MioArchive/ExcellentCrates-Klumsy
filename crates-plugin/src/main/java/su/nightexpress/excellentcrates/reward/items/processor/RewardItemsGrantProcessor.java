@@ -9,7 +9,7 @@ import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.component.RewardComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.grant.RewardGrantProcessor;
 import su.nightexpress.excellentcrates.api.reward.items.RewardItemsComponent;
-import su.nightexpress.nightcore.util.Players;
+import su.nightexpress.excellentcrates.util.InventoryUtils;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 
 @NullMarked
@@ -24,7 +24,7 @@ public class RewardItemsGrantProcessor implements RewardGrantProcessor {
             ItemStack itemStack = provider.getItemStack();
             if (itemStack == null) return;
 
-            Players.addItem(player, itemStack);
+            InventoryUtils.giveItem(player, itemStack);
         });
     }
 }

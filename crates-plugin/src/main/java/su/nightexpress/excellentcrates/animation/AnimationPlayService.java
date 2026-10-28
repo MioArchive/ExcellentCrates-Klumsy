@@ -2,6 +2,7 @@ package su.nightexpress.excellentcrates.animation;
 
 import java.util.List;
 
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -10,6 +11,7 @@ import org.jspecify.annotations.NullMarked;
 import su.nightexpress.engine.action.ActionResult;
 import su.nightexpress.excellentcrates.animation.lang.AnimationsLang;
 import su.nightexpress.excellentcrates.animation.session.AnimationSessionService;
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.animation.AnimationContext;
 import su.nightexpress.excellentcrates.api.animation.AnimationProfile;
 import su.nightexpress.excellentcrates.api.animation.AnimationRegistry;
@@ -22,6 +24,7 @@ import su.nightexpress.excellentcrates.api.crate.pipeline.context.PipelineContex
 import su.nightexpress.excellentcrates.api.crate.pipeline.reward.PipelineReward;
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.preview.RewardPreviewAPI;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.nightcore.bridge.key.AdaptedKey;
 import su.nightexpress.nightcore.util.EntityUtil;
 import su.nightexpress.nightcore.util.LocationUtil;
@@ -29,13 +32,16 @@ import su.nightexpress.nightcore.util.LocationUtil;
 @NullMarked
 public class AnimationPlayService {
 
+    private final CratesPlugin            plugin;
     private final AnimationRegistry       registry;
     private final AnimationSessionService sessionService;
     private final RewardPreviewAPI        rewardPreview;
 
-    public AnimationPlayService(AnimationRegistry registry,
+    public AnimationPlayService(CratesPlugin plugin,
+                                AnimationRegistry registry,
                                 AnimationSessionService sessionService,
                                 RewardPreviewAPI rewardPreview) {
+        this.plugin = plugin;
         this.registry = registry;
         this.sessionService = sessionService;
         this.rewardPreview = rewardPreview;
@@ -107,9 +113,11 @@ public class AnimationPlayService {
             onComplete
         );
 
-        return this.playSequential(request, 0);
+        RegionTasks.runAt(this.plugin, location, () -> this.playSequential(request, 0));
+        return ActionResult.ok();
     }
 
+    @CanIgnoreReturnValue
     private ActionResult playSequential(AnimationChainRequest request, int currentIndex) {
         // All rewards have been played
         if (currentIndex >= request.targetRewards().size()) {

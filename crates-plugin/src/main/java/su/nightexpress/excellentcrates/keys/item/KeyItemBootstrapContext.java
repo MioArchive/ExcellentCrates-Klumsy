@@ -61,7 +61,7 @@ public class KeyItemBootstrapContext extends NamedBootstrapContext {
 
         this.editorExtension = editorContext.extension;
 
-        this.commands.add(new KeyItemDropCommand(itemService, dispatcher));
+        this.commands.add(new KeyItemDropCommand(plugin, itemService, dispatcher));
     }
 
     public KeyEditorExtension getEditorExtension() {

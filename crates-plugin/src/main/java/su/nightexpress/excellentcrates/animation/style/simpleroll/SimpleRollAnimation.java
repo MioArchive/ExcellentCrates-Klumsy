@@ -34,7 +34,7 @@ public class SimpleRollAnimation extends BaseAnimationInstance {
         this.finishTicks = settings.getFinishDelay();
 
         this.rewardLocation = this.adjustLocation(context.location());
-        this.rewardDisplay = this.createDisplay(this.player.getWorld());
+        this.rewardDisplay = this.createDisplay(this.rewardLocation.getWorld());
     }
 
     @Override

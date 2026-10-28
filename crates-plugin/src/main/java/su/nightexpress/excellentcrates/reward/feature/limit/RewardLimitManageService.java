@@ -67,7 +67,9 @@ public class RewardLimitManageService {
     private void incrementRolls(UUID playerId, RewardId rewardId, int amount) {
         RewardLimitData data = this.cachedDataService.getCachedOrCreate(playerId, rewardId, CacheStrategy.PERMANENT);
 
-        data.setRolls(data.getRolls() + amount);
+        synchronized (data) {
+            data.setRolls(data.getRolls() + amount);
+        }
 
         this.cachedDataService.markDirty(data);
     }

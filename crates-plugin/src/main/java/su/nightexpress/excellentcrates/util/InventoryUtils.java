@@ -2,14 +2,36 @@ package su.nightexpress.excellentcrates.util;
 
 import java.util.function.Predicate;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+
+import su.nightexpress.nightcore.util.Players;
 
 @NullMarked
 public final class InventoryUtils {
 
     private InventoryUtils() {
+    }
+
+    public static void giveItem(Player player, ItemStack itemStack) {
+        if (!Bukkit.isOwnedByCurrentRegion(player)) {
+            Players.addItem(player, itemStack);
+            return;
+        }
+        if (itemStack.getType().isAir()) return;
+
+        // Split like Players.addItem so unstackable items never land as one oversized stack.
+        int amount = itemStack.getAmount();
+        while (amount > 0) {
+            ItemStack part = itemStack.clone();
+            part.setAmount(Math.min(itemStack.getMaxStackSize(), amount));
+            amount -= part.getAmount();
+
+            player.getInventory().addItem(part).values()
+                .forEach(left -> player.getWorld().dropItem(player.getLocation(), left));
+        }
     }
 
     public static int countInventorySpace(Player player, ItemStack itemToCount) {

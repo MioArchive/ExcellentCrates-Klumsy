@@ -12,6 +12,7 @@ import org.jspecify.annotations.NullMarked;
 import su.nightexpress.engine.component.BaseController;
 import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.animation.AnimationInstance;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 
 @NullMarked
 public class AnimationSessionController extends BaseController {
@@ -45,16 +46,27 @@ public class AnimationSessionController extends BaseController {
     private void tickSessions() {
         this.sessionManager.purgeStoppedSessions();
 
-        for (AnimationInstance session : this.sessionManager.getSessions()) {
-            if (!session.tick()) {
-                session.stop();
-            }
+        for (AnimationSessionManager.Session session : this.sessionManager.getSessions()) {
+            RegionTasks.runAt(this.plugin, session.location(), () -> tickSession(session.instance()));
         }
     }
 
+    private static void tickSession(AnimationInstance instance) {
+        if (instance.isRunning() && !instance.tick()) {
+            instance.stop();
+        }
+    }
+
+    private void stopSession(UUID playerId) {
+        AnimationSessionManager.Session session = this.sessionManager.removeSession(playerId);
+        if (session == null) return;
+
+        RegionTasks.runAt(this.plugin, session.location(), session.instance()::stop);
+    }
+
     private void stopAllSessions() {
-        for (AnimationInstance session : this.sessionManager.getSessions()) {
-            session.stop();
+        for (AnimationSessionManager.Session session : this.sessionManager.getSessions()) {
+            RegionTasks.runAt(this.plugin, session.location(), session.instance()::stop);
         }
 
         this.sessionManager.purgeStoppedSessions();
@@ -65,7 +77,7 @@ public class AnimationSessionController extends BaseController {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
 
-        this.sessionManager.stopSession(playerId);
+        this.stopSession(playerId);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -73,6 +85,6 @@ public class AnimationSessionController extends BaseController {
         Player player = event.getPlayer();
         UUID playerId = player.getUniqueId();
 
-        this.sessionManager.stopSession(playerId);
+        this.stopSession(playerId);
     }
 }

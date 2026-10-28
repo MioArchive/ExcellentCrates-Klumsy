@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.NullMarked;
@@ -15,6 +16,7 @@ import su.nightexpress.engine.data.OwnableData;
 public class ExpiringCache<P, K, V extends OwnableData<P, K>> {
 
     private final Map<P, Map<K, CacheEntry<V>>> cacheMap = new ConcurrentHashMap<>();
+    private final Set<P> pinnedParents = ConcurrentHashMap.newKeySet();
 
     private final Duration timeToLive;
 
@@ -26,24 +28,42 @@ public class ExpiringCache<P, K, V extends OwnableData<P, K>> {
         this.cacheMap.clear();
     }
 
-    public void putPermanent(V value) {
-        this.put(value, new CacheEntry<V>(value, -1L));
+    public void pin(P parentId) {
+        this.pinnedParents.add(parentId);
     }
 
-    public void putTemporary(V value) {
-        long expiresAt = System.currentTimeMillis() + this.timeToLive.toMillis();
-        this.put(value, new CacheEntry<V>(value, expiresAt));
+    public void unpin(P parentId) {
+        this.pinnedParents.remove(parentId);
     }
 
-    private void put(V value, CacheEntry<V> entry) {
-        this.cacheMap.computeIfAbsent(value.getParentId(), p -> new ConcurrentHashMap<>()).put(value.getKey(), entry);
+    public V putPermanent(V value) {
+        return this.put(value, -1L);
+    }
+
+    public V putTemporary(V value) {
+        return this.put(value, System.currentTimeMillis() + this.timeToLive.toMillis());
+    }
+
+    private V put(V value, long expiresAt) {
+        P parentId = value.getParentId();
+
+        return this.cacheMap.computeIfAbsent(parentId, p -> new ConcurrentHashMap<>())
+            .compute(value.getKey(), (key, entry) -> {
+                V payload = entry == null || this.isExpired(parentId, entry) ? value : entry.payload();
+                return new CacheEntry<>(payload, expiresAt);
+            })
+            .payload();
+    }
+
+    private boolean isExpired(P parentId, CacheEntry<V> entry) {
+        return entry.isExpired() && !this.pinnedParents.contains(parentId);
     }
 
     public List<V> getAllByParent(P parentId) {
         Map<K, CacheEntry<V>> parentMap = this.cacheMap.get(parentId);
         if (parentMap == null) return List.of();
 
-        parentMap.values().removeIf(CacheEntry::isExpired);
+        parentMap.values().removeIf(entry -> this.isExpired(parentId, entry));
         if (parentMap.isEmpty()) {
             this.cacheMap.remove(parentId);
         }
@@ -78,7 +98,7 @@ public class ExpiringCache<P, K, V extends OwnableData<P, K>> {
             return Optional.empty();
         }
 
-        if (entry.isExpired()) {
+        if (this.isExpired(parentId, entry)) {
             parentMap.remove(key, entry);
             if (parentMap.isEmpty()) {
                 this.cacheMap.remove(parentId, parentMap);

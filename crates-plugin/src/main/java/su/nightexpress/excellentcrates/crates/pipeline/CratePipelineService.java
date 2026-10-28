@@ -12,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import su.nightexpress.engine.registry.TinyRegistry;
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
+import su.nightexpress.excellentcrates.api.crate.dispatcher.CrateMessageDispatcher;
 import su.nightexpress.excellentcrates.api.crate.event.CratePipelinePreStartEvent;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineChain;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineExecutor;
@@ -20,22 +22,31 @@ import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineProcessor;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineStage;
 import su.nightexpress.excellentcrates.api.crate.pipeline.RegisteredPipelineStage;
 import su.nightexpress.excellentcrates.api.crate.pipeline.context.PipelineContext;
+import su.nightexpress.excellentcrates.core.crate.permission.CratePerms;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
+import su.nightexpress.nightcore.core.config.CoreLang;
 
 @NullMarked
 public class CratePipelineService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CratePipelineService.class);
 
+    private final CratesPlugin                          plugin;
     private final TinyRegistry<RegisteredPipelineStage> stages;
     private final TinyRegistry<PipelineExecutor>        executors;
     private final TinyRegistry<PipelineProcessor>       processors;
+    private final CrateMessageDispatcher                dispatcher;
 
-    public CratePipelineService(TinyRegistry<RegisteredPipelineStage> stages,
+    public CratePipelineService(CratesPlugin plugin,
+                                TinyRegistry<RegisteredPipelineStage> stages,
                                 TinyRegistry<PipelineExecutor> executors,
-                                TinyRegistry<PipelineProcessor> processors) {
+                                TinyRegistry<PipelineProcessor> processors,
+                                CrateMessageDispatcher dispatcher) {
+        this.plugin = plugin;
         this.stages = stages;
         this.executors = executors;
         this.processors = processors;
+        this.dispatcher = dispatcher;
     }
 
     private List<PipelineStage> compileStages() {
@@ -58,6 +69,15 @@ public class CratePipelineService {
     }
 
     public void startPipeline(Player player, Crate crate, @Nullable Consumer<PipelineContext> consumer) {
+        RegionTasks.runFor(this.plugin, player, () -> this.startOwnedPipeline(player, crate, consumer));
+    }
+
+    private void startOwnedPipeline(Player player, Crate crate, @Nullable Consumer<PipelineContext> consumer) {
+        if (crate.getBase().isPermissionRequired() && !player.hasPermission(CratePerms.open(crate))) {
+            this.dispatcher.send(player, CoreLang.ERROR_NO_PERMISSION);
+            return;
+        }
+
         PipelineContext context = new DefaultPipelineContext(crate);
 
         if (consumer != null) {
@@ -93,9 +113,8 @@ public class CratePipelineService {
                 return;
             }
 
-            highestPriorityProcessor.process(player, context, () -> {
-                this.executors.forEach(executor -> executor.execute(player, crate, context));
-            });
+            Runnable grant = () -> this.executors.forEach(executor -> executor.execute(player, crate, context));
+            highestPriorityProcessor.process(player, context, () -> RegionTasks.runFor(this.plugin, player, grant, grant));
             return;
         }
 
@@ -105,7 +124,8 @@ public class CratePipelineService {
 
             @Override
             public void proceed(Player player, PipelineContext context) {
-                executeChain(player, crate, context, stages, index + 1);
+                // Stages may resume from a menu click, which nightcore runs on the global region.
+                RegionTasks.runFor(plugin, player, () -> executeChain(player, crate, context, stages, index + 1));
             }
 
             @Override

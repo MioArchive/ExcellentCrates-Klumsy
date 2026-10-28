@@ -91,7 +91,7 @@ public class CrateItemBootstrapContext extends NamedBootstrapContext {
 
         this.commands.add(new CrateItemGetCommand(itemService, dispatcher));
         this.commands.add(new CrateItemGiveCommand(itemService, dispatcher));
-        this.commands.add(new CrateItemDropCommand(itemService, dispatcher));
+        this.commands.add(new CrateItemDropCommand(plugin, itemService, dispatcher));
     }
 
     public CrateEditorExtension getEditorExtension() {

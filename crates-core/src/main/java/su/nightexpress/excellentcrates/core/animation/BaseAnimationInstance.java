@@ -25,7 +25,7 @@ public abstract class BaseAnimationInstance implements AnimationInstance {
 
     protected final Runnable onComplete;
 
-    private boolean running;
+    private volatile boolean running;
 
     public BaseAnimationInstance(AnimationContext context, Runnable onComplete) {
         this.player = context.player();
@@ -56,6 +56,8 @@ public abstract class BaseAnimationInstance implements AnimationInstance {
 
     @Override
     public void stop() {
+        if (!this.running) return;
+
         this.running = false;
         this.onStop();
         this.complete();

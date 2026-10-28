@@ -1,12 +1,14 @@
 package su.nightexpress.excellentcrates.keys.balance.command;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
-import su.nightexpress.engine.action.ActionResult;
 import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.command.KeyCommand;
 import su.nightexpress.excellentcrates.api.key.dispatcher.KeyMessageDispatcher;
@@ -62,41 +64,42 @@ public class KeyGiveAllCommand implements KeyCommand {
         int amount = Math.abs(arguments.getInt(ARGUMENT_AMOUNT, 1));
         CommandSender sender = context.getSender();
 
-        int totalGiven = 0;
+        AtomicInteger totalGiven = new AtomicInteger();
+        List<CompletableFuture<Void>> deliveries = new ArrayList<>();
+
         for (Player player : Players.getOnline()) {
             if (!player.hasPermission(KeyPerms.COMMAND_GIVE_ALL_INCLUDED)) continue;
 
-            ActionResult result = this.balanceService.addKey(player, key, amount);
+            deliveries.add(this.balanceService.addKeyAsync(player, key, amount).thenAccept(result -> {
+                if (!result.success()) {
+                    result.handleFeedback((locale, actionContext) -> {
+                        this.dispatcher.sendBase(sender, key, locale, ctx -> ctx
+                            .apply(actionContext)
+                            .with(CommonPlaceholders.PLAYER.resolver(player))
+                        );
+                    });
+                    return;
+                }
 
-            // If adding the key to the player failed, handle the feedback and continue to the next player.
-            if (!result.success()) {
-                result.handleFeedback((locale, actionContext) -> {
-                    this.dispatcher.sendBase(sender, key, locale, ctx -> ctx
-                        .apply(actionContext)
-                        .with(CommonPlaceholders.PLAYER.resolver(player))
-                    );
-                });
-                continue;
-            }
+                if (!context.hasFlag(FLAG_SILENT)) {
+                    result.handleFeedback((locale, actionContext) -> {
+                        this.dispatcher.sendBase(player, key, KeyLang.KEY_GIVE_NOTIFY, ctx -> ctx
+                            .apply(actionContext)
+                        );
+                    });
+                }
 
-            // If adding the key to the player succeeded, handle the feedback unless the silent flag is set.
-            if (!context.hasFlag(FLAG_SILENT)) {
-                result.handleFeedback((locale, actionContext) -> {
-                    this.dispatcher.sendBase(player, key, KeyLang.KEY_GIVE_NOTIFY, ctx -> ctx
-                        .apply(actionContext)
-                    );
-                });
-            }
-
-            totalGiven += amount;
+                totalGiven.addAndGet(amount);
+            }));
         }
 
         if (!context.hasFlag(FLAG_SILENT_FEEDBACK)) {
-            int finalTotalGiven = totalGiven;
-            this.dispatcher.sendBase(sender, key, KeyLang.KEY_GIVE_ALL_FEEDBACK, ctx -> ctx
-                .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(amount))
-                .with(SharedPlaceholders.TOTAL, () -> NumberUtil.format(finalTotalGiven))
-            );
+            CompletableFuture.allOf(deliveries.toArray(new CompletableFuture[0])).whenComplete((ignored, throwable) -> {
+                this.dispatcher.sendBase(sender, key, KeyLang.KEY_GIVE_ALL_FEEDBACK, ctx -> ctx
+                    .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(amount))
+                    .with(SharedPlaceholders.TOTAL, () -> NumberUtil.format(totalGiven.get()))
+                );
+            });
         }
 
         return true;

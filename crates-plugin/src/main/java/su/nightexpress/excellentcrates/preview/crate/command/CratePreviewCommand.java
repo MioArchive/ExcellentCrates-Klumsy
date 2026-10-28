@@ -6,10 +6,12 @@ import org.jspecify.annotations.NullMarked;
 
 import su.nightexpress.engine.action.ActionResult;
 import su.nightexpress.engine.ui.menu.BackwardNavigator;
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.command.CrateCommand;
 import su.nightexpress.excellentcrates.api.crate.dispatcher.CrateMessageDispatcher;
 import su.nightexpress.excellentcrates.api.preview.PreviewContext;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.preview.DefaultPreviewContext;
 import su.nightexpress.excellentcrates.preview.lang.PreviewLang;
 import su.nightexpress.excellentcrates.preview.permission.PreviewPerms;
@@ -28,10 +30,12 @@ public class CratePreviewCommand implements CrateCommand {
     private static final String ARGUMENT_CRATE  = "crate";
     private static final String ARGUMENT_PLAYER = "player";
 
+    private final CratesPlugin           plugin;
     private final PreviewViewService     viewService;
     private final CrateMessageDispatcher dispatcher;
 
-    public CratePreviewCommand(PreviewViewService viewService, CrateMessageDispatcher dispatcher) {
+    public CratePreviewCommand(CratesPlugin plugin, PreviewViewService viewService, CrateMessageDispatcher dispatcher) {
+        this.plugin = plugin;
         this.viewService = viewService;
         this.dispatcher = dispatcher;
     }
@@ -67,12 +71,17 @@ public class CratePreviewCommand implements CrateCommand {
             target = context.getPlayerOrThrow();
         }
 
+        RegionTasks.runFor(this.plugin, target, () -> this.openPreview(sender, target, crate));
+        return true;
+    }
+
+    private void openPreview(CommandSender sender, Player target, Crate crate) {
         PreviewContext previewContext = new DefaultPreviewContext(crate, BackwardNavigator.CLOSE_INVENTORY);
 
         ActionResult result = viewService.openPreview(target, previewContext);
         if (!result.success()) {
             result.handleFeedback((locale, ctx) -> this.dispatcher.sendBase(sender, crate, locale, ctx));
-            return false;
+            return;
         }
 
         boolean self = sender.equals(target);
@@ -80,7 +89,5 @@ public class CratePreviewCommand implements CrateCommand {
         this.dispatcher.sendBase(sender, crate, locale, ctx -> ctx
             .with(CommonPlaceholders.PLAYER.resolver(target))
         );
-
-        return true;
     }
 }

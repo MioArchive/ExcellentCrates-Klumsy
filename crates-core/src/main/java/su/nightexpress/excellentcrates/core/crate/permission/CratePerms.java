@@ -2,6 +2,7 @@ package su.nightexpress.excellentcrates.core.crate.permission;
 
 import org.bukkit.permissions.Permission;
 
+import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.core.permission.Perms;
 import su.nightexpress.nightcore.bridge.permission.PermissionNamespace;
 
@@ -12,6 +13,7 @@ public final class CratePerms {
     public static final PermissionNamespace BYPASS  = ROOT.namespace("bypass");
 
     public static final PermissionNamespace EDITOR = ROOT.namespace("editor");
+    public static final PermissionNamespace OPEN   = ROOT.namespace("open");
 
     public static final Permission COMMAND_ROOT        = COMMAND.create("root");
     public static final Permission COMMAND_EDITOR      = COMMAND.create("editor");
@@ -21,5 +23,9 @@ public final class CratePerms {
     public static final Permission EDITOR_CORE = EDITOR.create("core");
 
     private CratePerms() {
+    }
+
+    public static String open(Crate crate) {
+        return OPEN.getPrefix() + "." + crate.idString();
     }
 }

@@ -88,7 +88,7 @@ public class AnimationModuleBootstrap extends CrateModuleBootstrap {
 
             this.bridge.onAvailable(CoreServices.REWARDS, rewardsApi -> {
                 AnimationPlayService playService = new AnimationPlayService(
-                    animations, sessionService, rewardsApi.getView()
+                    plugin, animations, sessionService, rewardsApi.getView()
                 );
 
                 cratesApi.pipeline().registerStage(

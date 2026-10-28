@@ -6,6 +6,7 @@ import su.nightexpress.engine.bootstrap.context.NamedBootstrapContext;
 import su.nightexpress.engine.id.Identifier;
 import su.nightexpress.engine.registry.SimpleRegistry;
 import su.nightexpress.engine.registry.TinyRegistry;
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.dispatcher.CrateMessageDispatcher;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineAPI;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineExecutor;
@@ -29,14 +30,14 @@ public final class CratePipelineBootstrapContext extends NamedBootstrapContext {
 
     public final PipelineAPI api;
 
-    public CratePipelineBootstrapContext(CrateMessageDispatcher dispatcher) {
+    public CratePipelineBootstrapContext(CratesPlugin plugin, CrateMessageDispatcher dispatcher) {
         super(BUNDLE_ID, BUNDLE_NAME);
 
         this.stages = new SimpleRegistry<>();
         this.executors = new SimpleRegistry<>();
         this.processors = new SimpleRegistry<>();
 
-        CratePipelineService pipeline = new CratePipelineService(stages, executors, processors);
+        CratePipelineService pipeline = new CratePipelineService(plugin, stages, executors, processors, dispatcher);
 
         this.interactAction = new CratePipelineInteractAction(pipeline);
         this.crateCommand = new CrateOpenCommand(pipeline, dispatcher);

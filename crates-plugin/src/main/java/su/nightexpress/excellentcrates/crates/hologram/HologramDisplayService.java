@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.block.position.CratePosition;
 import su.nightexpress.excellentcrates.api.crate.block.position.CratePositionRegistry;
@@ -18,6 +19,7 @@ import su.nightexpress.excellentcrates.api.crate.hologram.component.HologramComp
 import su.nightexpress.excellentcrates.api.crate.hologram.component.HologramOffset;
 import su.nightexpress.excellentcrates.api.crate.placeholder.CratePlaceholders;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateRegistry;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.nightcore.util.LocationUtil;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
@@ -25,15 +27,18 @@ import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 @NullMarked
 public class HologramDisplayService {
 
+    private final CratesPlugin          plugin;
     private final HologramProvider      provider;
     private final CrateRegistry         crateRegistry;
     private final CratePositionRegistry cratePositionRegistry;
     private final CratePlaceholders     cratePlaceholders;
 
-    public HologramDisplayService(HologramProvider provider,
+    public HologramDisplayService(CratesPlugin plugin,
+                                  HologramProvider provider,
                                   CrateRegistry crateRegistry,
                                   CratePositionRegistry cratePositionRegistry,
                                   CratePlaceholders cratePlaceholders) {
+        this.plugin = plugin;
         this.provider = provider;
         this.crateRegistry = crateRegistry;
         this.cratePositionRegistry = cratePositionRegistry;
@@ -86,7 +91,14 @@ public class HologramDisplayService {
             Location hologramLocation = LocationUtil.setCenter3D(blockLocation)
                 .add(offset.getX(), offset.getY(), offset.getZ());
 
-            this.provider.render(crate, cratePosition, hologramLocation, world, textProvider);
+            // Providers look up nearby players and resolve their placeholders, which the location's region owns.
+            RegionTasks.runAt(this.plugin, hologramLocation, () -> {
+                // A queued render must not recreate a hologram whose block was removed or disabled meanwhile.
+                if (!crate.id().equals(this.cratePositionRegistry.getCrateIdAt(cratePosition))) return;
+                if (!(crate.getComponentOrNull(CrateComponentKeys.HOLOGRAM) instanceof HologramComponent current) || !current.isEnabled()) return;
+
+                this.provider.render(crate, cratePosition, hologramLocation, world, textProvider);
+            });
         });
     }
 }

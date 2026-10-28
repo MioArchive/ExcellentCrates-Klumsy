@@ -30,7 +30,7 @@ public class RewardLimitsSaveController extends BaseController {
 
     @Override
     protected void onControllerShutdown() {
-        this.dataService.saveDirtyData();
+        this.dataService.saveDirtyDataAndWait();
     }
 
     @Override

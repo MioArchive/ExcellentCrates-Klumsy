@@ -12,12 +12,14 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 import su.nightexpress.engine.action.ActionResult;
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.command.CrateCommand;
 import su.nightexpress.excellentcrates.api.crate.dispatcher.CrateFeedbackHandler;
 import su.nightexpress.excellentcrates.api.crate.dispatcher.CrateMessageDispatcher;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
 import su.nightexpress.excellentcrates.core.lang.Lang;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.crates.item.CrateItemService;
 import su.nightexpress.excellentcrates.crates.item.lang.CrateItemLang;
 import su.nightexpress.excellentcrates.crates.item.permission.CrateItemPerms;
@@ -43,10 +45,12 @@ public class CrateItemDropCommand implements CrateCommand, CrateFeedbackHandler 
     private static final String ARGUMENT_Y      = "y";
     private static final String ARGUMENT_Z      = "z";
 
+    private final CratesPlugin           plugin;
     private final CrateItemService       itemService;
     private final CrateMessageDispatcher dispatcher;
 
-    public CrateItemDropCommand(CrateItemService itemService, CrateMessageDispatcher dispatcher) {
+    public CrateItemDropCommand(CratesPlugin plugin, CrateItemService itemService, CrateMessageDispatcher dispatcher) {
+        this.plugin = plugin;
         this.itemService = itemService;
         this.dispatcher = dispatcher;
     }
@@ -104,7 +108,7 @@ public class CrateItemDropCommand implements CrateCommand, CrateFeedbackHandler 
         itemStack.setAmount(amount);
 
         Location location = new Location(world, x, y, z);
-        world.dropItemNaturally(location, itemStack);
+        RegionTasks.runAt(this.plugin, location, () -> world.dropItemNaturally(location, itemStack));
 
         return this.handleFeedbackBase(sender, crate, ActionResult.ok(CrateItemLang.COMMAND_DROP_FEEDBACK, ctx -> ctx
             .with(CommonPlaceholders.GENERIC_AMOUNT, () -> NumberUtil.format(amount))

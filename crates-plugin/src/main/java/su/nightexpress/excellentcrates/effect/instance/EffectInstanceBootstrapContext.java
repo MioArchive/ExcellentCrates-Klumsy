@@ -24,7 +24,7 @@ public class EffectInstanceBootstrapContext extends NamedBootstrapContext {
                                           EffectRegistry effectRegistry) {
         super(ID, NAME);
 
-        this.instanceService = new EffectInstanceService(effectRegistry);
+        this.instanceService = new EffectInstanceService(plugin, effectRegistry);
         this.positionObserver = new EffectInstancePositionObserver(crateRegistry, this.instanceService);
 
         this.addComponent(new EffectInstanceTickController(plugin, instanceService));

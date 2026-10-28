@@ -55,7 +55,7 @@ public class RewardCommandsBootstrapContext extends NamedBootstrapContext {
 
         this.dataExtension = new RewardCommandsDataExtension();
         this.editorExtension = new RewardCommandsEditorExtension(editorUIController);
-        this.grantProcessor = new RewardCommandsGrantProcessor();
+        this.grantProcessor = new RewardCommandsGrantProcessor(plugin);
 
         this.addComponent(new RewardCommandsEditorMenuRegistrar(plugin, uiService, rewardRegistry, editorUIController));
         this.addComponent(new RewardCommandsEditorDialogRegistrar(uiService, editorUIController));

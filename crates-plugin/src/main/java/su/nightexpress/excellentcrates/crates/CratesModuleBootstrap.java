@@ -50,6 +50,7 @@ public final class CratesModuleBootstrap extends CrateModuleBootstrap {
 
         plugin.injectLang(CratesLang.class);
         plugin.registerPermissions(CratePerms.ROOT);
+        plugin.registerPermissions(CratePerms.OPEN);
         plugin.addPlaceholderAPIResolver(new CratePlaceholderAPIResolver(crates, cratePlaceholders));
 
         // -----------------------------------------
@@ -60,7 +61,7 @@ public final class CratesModuleBootstrap extends CrateModuleBootstrap {
         CrateDataContext dataContext = new CrateDataContext(plugin, crates, configContext.settings);
         CrateCommandsContext commandsContext = new CrateCommandsContext(plugin, crates, configContext.settings);
         CrateQuotaBootstrapContext quotaContext = new CrateQuotaBootstrapContext(dispatcher);
-        CratePipelineBootstrapContext pipelineContext = new CratePipelineBootstrapContext(dispatcher);
+        CratePipelineBootstrapContext pipelineContext = new CratePipelineBootstrapContext(plugin, dispatcher);
         InteractionBootstrapContext interactionContext = new InteractionBootstrapContext(plugin);
 
         CrateItemBootstrapContext itemContext = new CrateItemBootstrapContext(

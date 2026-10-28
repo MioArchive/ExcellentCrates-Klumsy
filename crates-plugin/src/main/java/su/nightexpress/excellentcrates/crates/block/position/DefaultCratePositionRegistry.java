@@ -1,11 +1,10 @@
 package su.nightexpress.excellentcrates.crates.block.position;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
@@ -38,8 +37,8 @@ public class DefaultCratePositionRegistry implements CratePositionRegistry {
 
     public DefaultCratePositionRegistry(CrateResolver crateResolver) {
         this.crateResolver = crateResolver;
-        this.crateIdByPositionMap = new HashMap<>();
-        this.positionsByCrateIdMap = new HashMap<>();
+        this.crateIdByPositionMap = new ConcurrentHashMap<>();
+        this.positionsByCrateIdMap = new ConcurrentHashMap<>();
         this.observers = new CopyOnWriteArrayList<>();
     }
 
@@ -63,9 +62,11 @@ public class DefaultCratePositionRegistry implements CratePositionRegistry {
     public void registerPosition(Identifier crateId, CratePosition position) {
         this.crateIdByPositionMap.put(position, crateId);
 
-        Set<CratePosition> existingPositions = this.positionsByCrateIdMap.computeIfAbsent(crateId,
-            k -> new HashSet<>());
-        existingPositions.add(position);
+        this.positionsByCrateIdMap.compute(crateId, (id, positions) -> {
+            Set<CratePosition> set = positions == null ? ConcurrentHashMap.newKeySet() : positions;
+            set.add(position);
+            return set;
+        });
 
         this.observers.forEach(observer -> observer.onPositionAdded(crateId, position));
     }
@@ -88,14 +89,10 @@ public class DefaultCratePositionRegistry implements CratePositionRegistry {
         Identifier crateId = this.crateIdByPositionMap.remove(position);
         if (crateId == null) return;
 
-        Set<CratePosition> existingPositions = this.positionsByCrateIdMap.get(crateId);
-        if (existingPositions == null) return;
-
-        existingPositions.remove(position);
-
-        if (existingPositions.isEmpty()) {
-            this.positionsByCrateIdMap.remove(crateId);
-        }
+        this.positionsByCrateIdMap.computeIfPresent(crateId, (id, positions) -> {
+            positions.remove(position);
+            return positions.isEmpty() ? null : positions;
+        });
 
         this.observers.forEach(observer -> observer.onPositionRemoved(crateId, position));
     }

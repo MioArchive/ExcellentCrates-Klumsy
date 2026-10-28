@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.commands.RewardCommandPool;
@@ -13,12 +14,19 @@ import su.nightexpress.excellentcrates.api.reward.commands.RewardCommandsCompone
 import su.nightexpress.excellentcrates.api.reward.commands.RewardCommandExecutionMode;
 import su.nightexpress.excellentcrates.api.reward.component.RewardComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.grant.RewardGrantProcessor;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.util.WeightedRandomSelector;
 import su.nightexpress.nightcore.util.Randomizer;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 
 @NullMarked
 public class RewardCommandsGrantProcessor implements RewardGrantProcessor {
+
+    private final CratesPlugin plugin;
+
+    public RewardCommandsGrantProcessor(CratesPlugin plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
     public void execute(Player player, Crate crate, Reward reward, PlaceholderContext placeholders) {
@@ -56,9 +64,9 @@ public class RewardCommandsGrantProcessor implements RewardGrantProcessor {
     }
 
     private void executeBundle(RewardCommandPool bundle, PlaceholderContext placeholders) {
-        bundle.getCommands().forEach(command -> {
-            String processedCommand = placeholders.apply(command);
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), processedCommand);
-        });
+        List<String> processedCommands = placeholders.apply(bundle.getCommands());
+        RegionTasks.runGlobal(this.plugin, () -> processedCommands.forEach(command ->
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command)
+        ));
     }
 }

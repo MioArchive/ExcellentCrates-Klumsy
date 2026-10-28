@@ -6,10 +6,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import su.nightexpress.engine.action.ActionResult;
 import su.nightexpress.engine.data.cache.CacheStrategy;
@@ -18,9 +22,13 @@ import su.nightexpress.engine.data.cache.ExpiringCache;
 @NullMarked
 public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataCacheService.class);
+
     protected final SQLRepository<P, K, V> repository;
     protected final ExpiringCache<P, K, V> cache;
     protected final DataStateTracker<P, K> stateTracker;
+
+    private final Set<CompletableFuture<Void>> pendingSaves = ConcurrentHashMap.newKeySet();
 
     public DataCacheService(SQLRepository<P, K, V> repository, Duration cacheTTL) {
         this.repository = repository;
@@ -28,12 +36,15 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
         this.stateTracker = new DataStateTracker<>();
     }
 
-    private void applyCacheStrategy(V data, CacheStrategy strategy) {
-        switch (strategy) {
+    private V applyCacheStrategy(V data, CacheStrategy strategy) {
+        return switch (strategy) {
             case PERMANENT -> this.cache.putPermanent(data);
             case TEMPORARY -> this.cache.putTemporary(data);
-            case NONE -> this.cache.remove(data);
-        }
+            case NONE -> {
+                this.cache.remove(data);
+                yield data;
+            }
+        };
     }
 
     public abstract V createDefaultData(@NonNull P parentId, @NonNull K key);
@@ -56,15 +67,13 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
      * @return a CompletableFuture containing an Optional with the data entry if it exists
      */
     public CompletableFuture<Optional<V>> loadAndCacheAsync(P parentId, K key, CacheStrategy strategy) {
-        if (this.cache.contains(parentId, key)) {
-            return CompletableFuture.completedFuture(this.cache.get(parentId, key));
+        Optional<V> cached = this.cache.get(parentId, key);
+        if (cached.isPresent()) {
+            return CompletableFuture.completedFuture(cached);
         }
 
-        return this.repository.loadById(parentId, key).whenComplete((optionalData, throwable) -> {
-            if (throwable == null && optionalData != null) {
-                optionalData.ifPresent(data -> this.applyCacheStrategy(data, strategy));
-            }
-        });
+        return this.repository.loadById(parentId, key)
+            .thenApply(optionalData -> optionalData.map(data -> this.applyCacheStrategy(data, strategy)));
     }
 
     /**
@@ -83,8 +92,7 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
                 return optionalData.get();
             }
 
-            V newData = this.createDefaultData(parentId, key);//defaultFactory.apply(parentId, key);
-            this.applyCacheStrategy(newData, strategy);
+            V newData = this.applyCacheStrategy(this.createDefaultData(parentId, key), strategy);
 
             if (strategy != CacheStrategy.NONE) {
                 this.markDirty(newData);
@@ -148,17 +156,11 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
         return this.cache.getAllByParent(parentId);
     }
 
-    public V getCachedOrCreate(P parentId, K key, /* BiFunction<P, K, V> defaultFactory, */ CacheStrategy strategy) {
-        return this.getCached(parentId, key).orElseGet(() -> {
-            V newData = this.createDefaultData(parentId, key);
-            this.applyCacheStrategy(newData, strategy);
-
-            if (strategy != CacheStrategy.NONE) {
-                this.markDirty(newData);
-            }
-
-            return newData;
-        });
+    // A miss does not prove the row is absent (it may have expired or never been loaded), so a default is only
+    // created after the DB read; blocks on that read.
+    public V getCachedOrCreate(P parentId, K key, CacheStrategy strategy) {
+        return this.getCached(parentId, key)
+            .orElseGet(() -> this.loadOrCreateAndCacheAsync(parentId, key, strategy).join());
     }
 
     public V getCachedStrict(P parentId, K key) {
@@ -182,8 +184,15 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
         this.getCached(parentId, key).ifPresent(data -> this.applyCacheStrategy(data, newStrategy));
     }
 
+    /**
+     * PERMANENT also pins the parent, so entries cached afterwards (e.g. a player's first key of a kind) don't expire
+     * either; any other strategy unpins it.
+     */
     public void updateCacheStrategy(P parentId, CacheStrategy newStrategy) {
+        if (newStrategy == CacheStrategy.PERMANENT) this.cache.pin(parentId);
         this.getCached(parentId).forEach(data -> this.applyCacheStrategy(data, newStrategy));
+        // Unpin only after re-stamping, or entries whose original TTL already passed would be dropped here.
+        if (newStrategy != CacheStrategy.PERMANENT) this.cache.unpin(parentId);
     }
 
     /**
@@ -248,6 +257,24 @@ public abstract class DataCacheService<P, K, V extends OwnableData<P, K>> {
         CompletableFuture<Void> deleteFuture = toRemove.isEmpty() ? CompletableFuture.completedFuture(
             null) : this.repository.delete(toRemove);
 
-        return CompletableFuture.allOf(saveFuture, deleteFuture);
+        CompletableFuture<Void> save = CompletableFuture.allOf(saveFuture, deleteFuture);
+        this.pendingSaves.add(save);
+        save.whenComplete((result, throwable) -> this.pendingSaves.remove(save));
+        return save;
+    }
+
+    /**
+     * Saves dirty data and blocks until it and any in-flight periodic save are written. For shutdown: the writes run
+     * on daemon threads, which die with the JVM.
+     */
+    public void saveDirtyDataAndWait() {
+        this.saveDirtyData();
+
+        try {
+            CompletableFuture.allOf(this.pendingSaves.toArray(CompletableFuture[]::new)).join();
+        }
+        catch (CompletionException exception) {
+            LOGGER.error("Failed to save cached data", exception);
+        }
     }
 }

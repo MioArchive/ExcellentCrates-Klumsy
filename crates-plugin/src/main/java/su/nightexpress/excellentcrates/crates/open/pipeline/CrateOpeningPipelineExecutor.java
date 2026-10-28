@@ -7,21 +7,25 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
+import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.component.CrateComponentKeys;
 import su.nightexpress.excellentcrates.api.crate.open.OpenActionsComponent;
 import su.nightexpress.excellentcrates.api.crate.pipeline.PipelineExecutor;
 import su.nightexpress.excellentcrates.api.crate.pipeline.context.PipelineContext;
 import su.nightexpress.excellentcrates.api.crate.placeholder.CratePlaceholders;
+import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 
 @NullMarked
 public class CrateOpeningPipelineExecutor implements PipelineExecutor {
 
+    private final CratesPlugin      plugin;
     private final CratePlaceholders cratePlaceholders;
 
-    public CrateOpeningPipelineExecutor(CratePlaceholders cratePlaceholders) {
+    public CrateOpeningPipelineExecutor(CratesPlugin plugin, CratePlaceholders cratePlaceholders) {
+        this.plugin = plugin;
         this.cratePlaceholders = cratePlaceholders;
     }
 
@@ -38,11 +42,10 @@ public class CrateOpeningPipelineExecutor implements PipelineExecutor {
             .andThen(CommonPlaceholders.forPlaceholderAPI(player))
             .build();
 
-        CommandSender console = Bukkit.getConsoleSender();
-
-        for (String command : commands) {
-            String parsedCommand = placeholders.apply(command);
-            Bukkit.dispatchCommand(console, parsedCommand);
-        }
+        List<String> parsedCommands = placeholders.apply(commands);
+        RegionTasks.runGlobal(this.plugin, () -> {
+            CommandSender console = Bukkit.getConsoleSender();
+            parsedCommands.forEach(command -> Bukkit.dispatchCommand(console, command));
+        });
     }
 }

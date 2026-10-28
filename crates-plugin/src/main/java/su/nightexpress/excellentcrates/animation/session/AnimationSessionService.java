@@ -34,8 +34,8 @@ public class AnimationSessionService {
         }
 
         AnimationInstance instance = profile.createInstance(context, onComplete);
-        this.sessionManager.registerSession(player.getUniqueId(), instance);
         instance.start();
+        this.sessionManager.registerSession(player.getUniqueId(), instance, context.location());
 
         return ActionResult.ok();
     }

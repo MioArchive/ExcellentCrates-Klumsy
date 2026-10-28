@@ -1,8 +1,8 @@
 package su.nightexpress.excellentcrates.integration.packetevents.entity;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -19,7 +19,7 @@ public class Hologram {
     public Hologram(int entityId, Location displayLocation) {
         this.entityId = entityId;
         this.displayLocation = displayLocation;
-        this.humanViewers = new HashSet<>();
+        this.humanViewers = ConcurrentHashMap.newKeySet();
     }
 
     public void addViewer(Player player) {

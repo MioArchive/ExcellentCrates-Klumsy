@@ -30,7 +30,7 @@ public class KeyStorageDataSaveController extends BaseController {
 
     @Override
     protected void onControllerShutdown() {
-
+        this.cacheService.saveDirtyDataAndWait();
     }
 
     @Override

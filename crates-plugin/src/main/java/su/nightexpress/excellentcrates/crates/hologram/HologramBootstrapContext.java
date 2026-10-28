@@ -67,7 +67,7 @@ public final class HologramBootstrapContext extends NamedBootstrapContext {
 
         ActiveHologramProvider proxy = new ActiveHologramProvider();
 
-        this.displayService = new HologramDisplayService(proxy, crateRegistry, blockResolver, cratePlaceholders);
+        this.displayService = new HologramDisplayService(plugin, proxy,crateRegistry, blockResolver, cratePlaceholders);
 
         blockResolver.addObserver(new HologramPositionObserver(crateRegistry, displayService));
 
