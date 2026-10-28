@@ -19,6 +19,7 @@ import su.nightexpress.excellentcrates.api.crate.registry.CrateResolver;
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.RewardsAPI;
 import su.nightexpress.excellentcrates.api.reward.crate.CrateRewardsComponent;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.action.MenuItemAction;
@@ -27,14 +28,13 @@ import su.nightexpress.nightcore.ui.inventory.condition.ItemStateCondition;
 import su.nightexpress.nightcore.ui.inventory.condition.ItemStateConditions;
 import su.nightexpress.nightcore.ui.inventory.item.ItemPopulator;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.LowerCase;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 
 @NullMarked
-public class InventoryPreviewMenu extends AbstractObjectMenu<InventoryMenuContext> {
+public class InventoryPreviewMenu extends RegionSafeObjectMenu<InventoryMenuContext> {
 
     private final CrateResolver         crateResolver;
     private final CratePlaceholders     cratePlaceholders;

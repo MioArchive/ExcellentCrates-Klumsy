@@ -18,19 +18,19 @@ import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.data.model.KeyDisplay;
 import su.nightexpress.excellentcrates.api.key.editor.KeyEditorHook;
 import su.nightexpress.excellentcrates.api.key.registry.KeyResolver;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.keys.display.editor.ui.KeyDisplayEditorUIController;
 import su.nightexpress.excellentcrates.keys.display.editor.ui.menu.context.KeyDisplayMainMenuContext;
 import su.nightexpress.excellentcrates.keys.display.lang.KeyDisplayLang;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class KeyDisplayMainMenu extends AbstractObjectMenu<KeyDisplayMainMenuContext> {
+public class KeyDisplayMainMenu extends RegionSafeObjectMenu<KeyDisplayMainMenuContext> {
 
     private final KeyResolver                  keyResolver;
     private final KeyDisplayEditorUIController controller;

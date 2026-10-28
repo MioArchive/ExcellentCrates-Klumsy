@@ -13,20 +13,20 @@ import org.bukkit.inventory.MenuType;
 import org.jspecify.annotations.NullMarked;
 
 import su.nightexpress.excellentcrates.api.CratesPlugin;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.crates.batch.ui.menu.context.BatchAmountSelectionMenuContext;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.configuration.codec.ConfigCodecs;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
 
 @NullMarked
-public class BatchAmountSelectionMenu extends AbstractObjectMenu<BatchAmountSelectionMenuContext> {
+public class BatchAmountSelectionMenu extends RegionSafeObjectMenu<BatchAmountSelectionMenuContext> {
 
     private static final int[] DEFAULT_AMOUNT_SLOTS = {2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 20, 21, 22, 23, 24};
 

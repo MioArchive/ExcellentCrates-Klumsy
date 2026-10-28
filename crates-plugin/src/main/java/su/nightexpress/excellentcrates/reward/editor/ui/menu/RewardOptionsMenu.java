@@ -25,6 +25,7 @@ import su.nightexpress.excellentcrates.api.crate.data.extension.PositionedExtens
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorExtension;
 import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorHook;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.editor.lang.RewardEditorLang;
 import su.nightexpress.excellentcrates.reward.editor.ui.RewardEditorUIController;
 import su.nightexpress.excellentcrates.reward.editor.ui.menu.context.RewardOptionsMenuContext;
@@ -33,12 +34,11 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class RewardOptionsMenu extends AbstractObjectMenu<RewardOptionsMenuContext> {
+public class RewardOptionsMenu extends RegionSafeObjectMenu<RewardOptionsMenuContext> {
 
     private static final int[] EXTENSION_SLOTS = {
         //10, 11, 12, 13, 14, 15, 16,

@@ -20,6 +20,7 @@ import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorHook;
 import su.nightexpress.excellentcrates.api.reward.placeholder.RewardPlaceholders;
 import su.nightexpress.excellentcrates.api.reward.registry.RewardRegistry;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.feature.limit.editor.ui.RewardLimitsEditorUIController;
 import su.nightexpress.excellentcrates.reward.feature.limit.editor.ui.menu.context.RewardLimitsAlternativeMenuContext;
 import su.nightexpress.excellentcrates.reward.feature.limit.lang.RewardLimitsLang;
@@ -28,12 +29,11 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemPopulator;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class RewardLimitsAlternativeMenu extends AbstractObjectMenu<RewardLimitsAlternativeMenuContext> {
+public class RewardLimitsAlternativeMenu extends RegionSafeObjectMenu<RewardLimitsAlternativeMenuContext> {
 
     private final RewardRegistry                 registry;
     private final RewardPreviewService           previewService;

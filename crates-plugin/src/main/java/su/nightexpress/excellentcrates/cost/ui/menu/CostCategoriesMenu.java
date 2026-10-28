@@ -24,6 +24,7 @@ import su.nightexpress.excellentcrates.api.cost.type.CostOption;
 import su.nightexpress.excellentcrates.api.cost.type.CostType;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateResolver;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.cost.lang.CostLang;
 import su.nightexpress.excellentcrates.cost.ui.menu.context.CostCategoriesMenuContext;
 import su.nightexpress.nightcore.config.FileConfig;
@@ -32,12 +33,11 @@ import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.item.populator.SlotPattern;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class CostCategoriesMenu extends AbstractObjectMenu<CostCategoriesMenuContext> {
+public class CostCategoriesMenu extends RegionSafeObjectMenu<CostCategoriesMenuContext> {
 
     private static final SlotPattern DEFAULT_SLOT_PATTERN = new SlotPattern()
         .with(1, 13)

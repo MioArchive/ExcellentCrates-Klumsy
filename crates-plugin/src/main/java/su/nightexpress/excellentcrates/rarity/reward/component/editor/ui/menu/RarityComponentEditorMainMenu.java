@@ -22,6 +22,7 @@ import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.component.RewardComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorHook;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.rarity.reward.component.editor.ui.RarityComponentEditorUIController;
 import su.nightexpress.excellentcrates.rarity.reward.component.editor.ui.menu.context.RarityComponentMainMenuContext;
 import su.nightexpress.excellentcrates.rarity.reward.component.lang.RarityComponentLang;
@@ -30,13 +31,12 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class RarityComponentEditorMainMenu extends AbstractObjectMenu<RarityComponentMainMenuContext> {
+public class RarityComponentEditorMainMenu extends RegionSafeObjectMenu<RarityComponentMainMenuContext> {
 
     private final RarityResolver                    rarityResolver;
     private final RarityComponentEditorUIController uiController;

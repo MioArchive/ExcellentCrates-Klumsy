@@ -17,6 +17,7 @@ import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.data.model.CrateDisplay;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateResolver;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.crates.display.editor.ui.DisplayEditorUIController;
 import su.nightexpress.excellentcrates.crates.display.editor.ui.menu.context.CrateDisplaySettingsMenuContext;
 import su.nightexpress.excellentcrates.crates.editor.lang.CrateEditorLang;
@@ -24,14 +25,13 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
 
 @NullMarked
-public class CrateDisplaySettingsMenu extends AbstractObjectMenu<CrateDisplaySettingsMenuContext> {
+public class CrateDisplaySettingsMenu extends RegionSafeObjectMenu<CrateDisplaySettingsMenuContext> {
 
     private final CrateResolver             crateResolver;
     private final DisplayEditorUIController controller;

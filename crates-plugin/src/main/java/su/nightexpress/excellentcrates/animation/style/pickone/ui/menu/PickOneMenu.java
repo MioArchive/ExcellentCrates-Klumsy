@@ -18,6 +18,7 @@ import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.common.preview.NameAndLore;
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.api.reward.preview.RewardPreviewAPI;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.nightcore.bridge.wrap.NightSound;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.configuration.codec.ConfigCodecs;
@@ -26,12 +27,11 @@ import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.item.populator.SlotPattern;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.sound.VanillaSound;
 
 @NullMarked
-public class PickOneMenu extends AbstractObjectMenu<PickOneMenuContext> {
+public class PickOneMenu extends RegionSafeObjectMenu<PickOneMenuContext> {
 
     private static final ConfigProperty<SlotPattern> CHOICE_SLOTS = ConfigProperty.of(
         ConfigCodecs.SLOT_PATTERN,

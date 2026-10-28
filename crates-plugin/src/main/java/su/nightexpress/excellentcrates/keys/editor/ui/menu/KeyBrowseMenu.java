@@ -21,6 +21,7 @@ import su.nightexpress.engine.id.Identifier;
 import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.registry.KeyRegistry;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.keys.editor.lang.KeyEditorLang;
 import su.nightexpress.excellentcrates.keys.editor.ui.KeyEditorUIController;
 import su.nightexpress.excellentcrates.keys.editor.ui.menu.context.KeyBrowseMenuContext;
@@ -30,12 +31,11 @@ import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemPopulator;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class KeyBrowseMenu extends AbstractObjectMenu<KeyBrowseMenuContext> {
+public class KeyBrowseMenu extends RegionSafeObjectMenu<KeyBrowseMenuContext> {
 
     private final KeyRegistry           keyRegistry;
     private final KeyItemFactory        itemFactory;

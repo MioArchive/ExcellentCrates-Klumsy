@@ -26,6 +26,7 @@ import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.editor.KeyEditorExtension;
 import su.nightexpress.excellentcrates.api.key.editor.KeyEditorHook;
 import su.nightexpress.excellentcrates.api.key.registry.KeyResolver;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.keys.editor.lang.KeyEditorLang;
 import su.nightexpress.excellentcrates.keys.editor.ui.KeyEditorUIController;
 import su.nightexpress.excellentcrates.keys.editor.ui.menu.context.KeySettingsMenuContext;
@@ -33,12 +34,11 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class KeySettingsMenu extends AbstractObjectMenu<KeySettingsMenuContext> {
+public class KeySettingsMenu extends RegionSafeObjectMenu<KeySettingsMenuContext> {
 
     private static final int[] EXTENSION_SLOTS = new int[]{
         28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43

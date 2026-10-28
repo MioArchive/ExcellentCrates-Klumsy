@@ -21,6 +21,7 @@ import su.nightexpress.excellentcrates.api.crate.hologram.component.HologramComp
 import su.nightexpress.excellentcrates.api.crate.hologram.component.HologramOffset;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateResolver;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.crates.hologram.editor.ui.CrateHologramEditorUIController;
 import su.nightexpress.excellentcrates.crates.hologram.editor.ui.menu.context.CrateHologramOptionsMenuContext;
 import su.nightexpress.excellentcrates.crates.hologram.lang.HologramsLang;
@@ -29,13 +30,12 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class CrateHologramOptionsMenu extends AbstractObjectMenu<CrateHologramOptionsMenuContext> {
+public class CrateHologramOptionsMenu extends RegionSafeObjectMenu<CrateHologramOptionsMenuContext> {
 
     private final CrateResolver                   crateResolver;
     private final CrateHologramEditorUIController uiController;

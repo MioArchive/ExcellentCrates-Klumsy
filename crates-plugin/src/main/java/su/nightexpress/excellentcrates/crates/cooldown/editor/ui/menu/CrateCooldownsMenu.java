@@ -23,6 +23,7 @@ import su.nightexpress.excellentcrates.api.crate.cooldown.component.CrateCooldow
 import su.nightexpress.excellentcrates.api.crate.editor.CrateEditorHook;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateResolver;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.crates.cooldown.editor.ui.CrateCooldownsEditorUIController;
 import su.nightexpress.excellentcrates.crates.cooldown.editor.ui.menu.context.CrateCooldownsMenuContext;
 import su.nightexpress.excellentcrates.crates.cooldown.lang.CrateCooldownsLang;
@@ -32,12 +33,11 @@ import su.nightexpress.nightcore.locale.entry.IconLocale;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class CrateCooldownsMenu extends AbstractObjectMenu<CrateCooldownsMenuContext> {
+public class CrateCooldownsMenu extends RegionSafeObjectMenu<CrateCooldownsMenuContext> {
 
     private final CrateResolver                    crateResolver;
     private final CrateCooldownsEditorUIController controller;

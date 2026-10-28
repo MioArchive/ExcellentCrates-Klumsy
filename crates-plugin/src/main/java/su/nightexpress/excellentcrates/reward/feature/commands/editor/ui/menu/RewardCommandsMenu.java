@@ -26,6 +26,7 @@ import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorHook;
 import su.nightexpress.excellentcrates.api.reward.registry.RewardId;
 import su.nightexpress.excellentcrates.api.reward.registry.RewardResolver;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.feature.commands.component.StandrdRewardCommandPool;
 import su.nightexpress.excellentcrates.reward.feature.commands.editor.ui.RewardCommandsEditorUIController;
 import su.nightexpress.excellentcrates.reward.feature.commands.editor.ui.context.CommandBundleContext;
@@ -37,14 +38,13 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.NumberUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class RewardCommandsMenu extends AbstractObjectMenu<RewardCommandsMenuContext> {
+public class RewardCommandsMenu extends RegionSafeObjectMenu<RewardCommandsMenuContext> {
 
     private static final int[] ITEM_SLOTS = IntStream.range(9, 36).toArray();
     private static final int   ITEM_LIMIT = ITEM_SLOTS.length;

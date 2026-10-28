@@ -20,6 +20,7 @@ import su.nightexpress.excellentcrates.api.crate.component.CrateComponentKeys;
 import su.nightexpress.excellentcrates.api.crate.editor.CrateEditorHook;
 import su.nightexpress.excellentcrates.api.key.crate.KeyRequirementEntry;
 import su.nightexpress.excellentcrates.api.key.crate.KeyRequirementComponent;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.keys.cost.editor.ui.KeyCostEditorUIController;
 import su.nightexpress.excellentcrates.keys.cost.editor.ui.menu.context.KeyCostEntryMenuContext;
 import su.nightexpress.excellentcrates.keys.cost.lang.KeyCostLang;
@@ -27,14 +28,13 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.NumberUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class KeyCostEditorEntryMenu extends AbstractObjectMenu<KeyCostEntryMenuContext> {
+public class KeyCostEditorEntryMenu extends RegionSafeObjectMenu<KeyCostEntryMenuContext> {
 
     private final KeyCostEditorUIController controller;
 

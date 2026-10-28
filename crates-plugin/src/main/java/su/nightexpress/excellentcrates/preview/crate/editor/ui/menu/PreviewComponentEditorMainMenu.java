@@ -21,6 +21,7 @@ import su.nightexpress.excellentcrates.api.preview.Preview;
 import su.nightexpress.excellentcrates.api.preview.PreviewRegistry;
 import su.nightexpress.excellentcrates.api.preview.crate.PreviewComponent;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.preview.crate.editor.lang.PreviewComponentLang;
 import su.nightexpress.excellentcrates.preview.crate.editor.ui.PreviewComponentEditorUIController;
 import su.nightexpress.excellentcrates.preview.crate.editor.ui.menu.context.PreviewComponentEditorMainMenuContext;
@@ -30,13 +31,12 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class PreviewComponentEditorMainMenu extends AbstractObjectMenu<PreviewComponentEditorMainMenuContext> {
+public class PreviewComponentEditorMainMenu extends RegionSafeObjectMenu<PreviewComponentEditorMainMenuContext> {
 
     private final PreviewRegistry                    previewRegistry;
     private final PreviewComponentEditorUIController uiController;

@@ -20,6 +20,7 @@ import su.nightexpress.excellentcrates.api.crate.editor.CrateEditorHook;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateReference;
 import su.nightexpress.excellentcrates.api.reward.selectable.SelectableRewardsComponent;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.selectable.component.editor.ui.SelectiveEditorUIController;
 import su.nightexpress.excellentcrates.reward.selectable.component.editor.ui.menu.context.SelectiveEditorSettingsMenuContext;
 import su.nightexpress.excellentcrates.reward.selectable.lang.SelectableLang;
@@ -28,12 +29,11 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class SelectiveEditorSettingsMenu extends AbstractObjectMenu<SelectiveEditorSettingsMenuContext> {
+public class SelectiveEditorSettingsMenu extends RegionSafeObjectMenu<SelectiveEditorSettingsMenuContext> {
 
     private final SelectiveEditorUIController controller;
 

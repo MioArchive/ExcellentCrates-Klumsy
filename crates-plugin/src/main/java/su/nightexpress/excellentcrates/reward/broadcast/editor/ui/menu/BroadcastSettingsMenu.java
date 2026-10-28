@@ -19,6 +19,7 @@ import su.nightexpress.excellentcrates.api.reward.broadcast.RewardBroadcastCompo
 import su.nightexpress.excellentcrates.api.reward.component.RewardComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.editor.RewardEditorHook;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.broadcast.editor.ui.RewardBroadcastEditorUIController;
 import su.nightexpress.excellentcrates.reward.broadcast.editor.ui.menu.context.BroadcastSettingsMenuContext;
 import su.nightexpress.excellentcrates.reward.broadcast.lang.RewardBroadcastLang;
@@ -27,12 +28,11 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class BroadcastSettingsMenu extends AbstractObjectMenu<BroadcastSettingsMenuContext> {
+public class BroadcastSettingsMenu extends RegionSafeObjectMenu<BroadcastSettingsMenuContext> {
 
     private final RewardBroadcastEditorUIController controller;
 

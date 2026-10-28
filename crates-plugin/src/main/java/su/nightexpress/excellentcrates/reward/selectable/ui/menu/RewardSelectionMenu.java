@@ -24,6 +24,7 @@ import su.nightexpress.excellentcrates.api.reward.crate.CrateRewardsComponent;
 import su.nightexpress.excellentcrates.api.reward.placeholder.RewardPlaceholders;
 import su.nightexpress.excellentcrates.api.reward.registry.RewardReference;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.preview.RewardPreviewService;
 import su.nightexpress.excellentcrates.reward.selectable.SelectivePickContext;
 import su.nightexpress.excellentcrates.reward.selectable.SelectivePickService;
@@ -35,7 +36,6 @@ import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemPopulator;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.Lists;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
@@ -43,7 +43,7 @@ import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
 
 @NullMarked
-public class RewardSelectionMenu extends AbstractObjectMenu<RewardSelectionMenuContext> {
+public class RewardSelectionMenu extends RegionSafeObjectMenu<RewardSelectionMenuContext> {
 
     private static final String DEFAULT_TITLE = "Select Rewards: %s/%s"
         .formatted(SharedPlaceholders.CURRENT, SharedPlaceholders.MAX);

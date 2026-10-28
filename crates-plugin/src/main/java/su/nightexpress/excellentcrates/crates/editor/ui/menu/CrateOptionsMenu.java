@@ -26,6 +26,7 @@ import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.editor.CrateEditorExtension;
 import su.nightexpress.excellentcrates.api.crate.editor.CrateEditorHook;
 import su.nightexpress.excellentcrates.api.crate.registry.CrateRegistry;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.crates.editor.lang.CrateEditorLang;
 import su.nightexpress.excellentcrates.crates.editor.ui.CrateEditorUIController;
 import su.nightexpress.excellentcrates.crates.editor.ui.menu.context.CrateOptionsMenuContext;
@@ -33,12 +34,11 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class CrateOptionsMenu extends AbstractObjectMenu<CrateOptionsMenuContext> {
+public class CrateOptionsMenu extends RegionSafeObjectMenu<CrateOptionsMenuContext> {
 
     private static final int[] EXTENSION_SLOTS = {
         10, 11, 12, 13, 14, 15, 16,

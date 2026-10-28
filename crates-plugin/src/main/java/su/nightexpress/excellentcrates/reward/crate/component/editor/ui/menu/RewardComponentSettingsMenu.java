@@ -17,6 +17,7 @@ import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.crate.Crate;
 import su.nightexpress.excellentcrates.api.crate.component.CrateComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.crate.CrateRewardsComponent;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.crate.component.editor.ui.RewardComponentEditorUIController;
 import su.nightexpress.excellentcrates.reward.crate.component.editor.ui.menu.context.RewardComponentSettingsMenuContext;
 import su.nightexpress.excellentcrates.reward.crate.component.lang.RewardComponentLang;
@@ -24,14 +25,13 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.NumberUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 
 @NullMarked
-public class RewardComponentSettingsMenu extends AbstractObjectMenu<RewardComponentSettingsMenuContext> {
+public class RewardComponentSettingsMenu extends RegionSafeObjectMenu<RewardComponentSettingsMenuContext> {
 
     private final RewardComponentEditorUIController controller;
 

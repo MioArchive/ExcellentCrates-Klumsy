@@ -18,6 +18,7 @@ import su.nightexpress.excellentcrates.api.key.CrateKey;
 import su.nightexpress.excellentcrates.api.key.data.model.KeyBase;
 import su.nightexpress.excellentcrates.api.key.editor.KeyEditorHook;
 import su.nightexpress.excellentcrates.api.key.registry.KeyResolver;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.keys.common.base.editor.ui.KeyBaseEditorUIController;
 import su.nightexpress.excellentcrates.keys.common.base.editor.ui.menu.context.KeyBaseMainMenuContext;
 import su.nightexpress.excellentcrates.keys.common.base.lang.KeyBaseLang;
@@ -25,12 +26,11 @@ import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class KeyBaseMainMenu extends AbstractObjectMenu<KeyBaseMainMenuContext> {
+public class KeyBaseMainMenu extends RegionSafeObjectMenu<KeyBaseMainMenuContext> {
 
     private final KeyResolver               keyResolver;
     private final KeyBaseEditorUIController controller;

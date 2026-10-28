@@ -20,6 +20,7 @@ import su.nightexpress.excellentcrates.api.reward.component.RewardComponentKeys;
 import su.nightexpress.excellentcrates.api.reward.cooldown.RewardCooldownComponent;
 import su.nightexpress.excellentcrates.api.reward.Reward;
 import su.nightexpress.excellentcrates.core.SharedPlaceholders;
+import su.nightexpress.excellentcrates.core.ui.RegionSafeObjectMenu;
 import su.nightexpress.excellentcrates.reward.feature.cooldown.editor.ui.RewardCooldownsEditorUIController;
 import su.nightexpress.excellentcrates.reward.feature.cooldown.editor.ui.menu.context.RewardCooldownsMenuContext;
 import su.nightexpress.excellentcrates.reward.feature.cooldown.lang.RewardCooldownsLang;
@@ -29,12 +30,11 @@ import su.nightexpress.nightcore.locale.entry.IconLocale;
 import su.nightexpress.nightcore.ui.inventory.action.ActionContext;
 import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
-import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 
 @NullMarked
-public class RewardCooldownsMenu extends AbstractObjectMenu<RewardCooldownsMenuContext> {
+public class RewardCooldownsMenu extends RegionSafeObjectMenu<RewardCooldownsMenuContext> {
 
     private final RewardCooldownsEditorUIController controller;
 
