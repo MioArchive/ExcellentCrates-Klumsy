@@ -18,13 +18,17 @@ public class PickOneSettingsCodec implements ConfigCodec<PickOneSettings> {
         PickOneSettings defaults = PickOneSettings.defaultSettings();
         String name = config.getOrSet(path + ".name", ConfigCodecs.STRING, defaults.name());
         int choices = config.getOrSet(path + ".choices", ConfigCodecs.INT, defaults.choices());
+        int spinTicks = config.getOrSet(path + ".spin_ticks", ConfigCodecs.INT, defaults.spinTicks());
+        int lockIntervalTicks = config.getOrSet(path + ".lock_interval_ticks", ConfigCodecs.INT, defaults.lockIntervalTicks());
 
-        return new PickOneSettings(name, choices);
+        return new PickOneSettings(name, choices, spinTicks, lockIntervalTicks);
     }
 
     @Override
     public void write(FileConfig config, String path, PickOneSettings value) {
         config.set(path + ".name", value.name());
         config.set(path + ".choices", value.choices());
+        config.set(path + ".spin_ticks", value.spinTicks());
+        config.set(path + ".lock_interval_ticks", value.lockIntervalTicks());
     }
 }

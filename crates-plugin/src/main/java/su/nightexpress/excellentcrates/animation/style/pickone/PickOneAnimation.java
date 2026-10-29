@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.Sound;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import su.nightexpress.engine.ui.CoreUIService;
 import su.nightexpress.excellentcrates.animation.style.pickone.ui.PickOneUIKeys;
+import su.nightexpress.excellentcrates.animation.style.pickone.ui.menu.PickOneMenu;
 import su.nightexpress.excellentcrates.animation.style.pickone.ui.menu.context.PickOneMenuContext;
+import su.nightexpress.excellentcrates.animation.style.pickone.ui.menu.context.PickOneMenuContext.Board;
 import su.nightexpress.excellentcrates.api.CratesPlugin;
 import su.nightexpress.excellentcrates.api.animation.AnimationContext;
 import su.nightexpress.excellentcrates.api.reward.Reward;
@@ -17,16 +20,24 @@ import su.nightexpress.excellentcrates.core.animation.BaseAnimationInstance;
 import su.nightexpress.excellentcrates.core.util.RegionTasks;
 import su.nightexpress.excellentcrates.util.WeightedRandomSelector;
 import su.nightexpress.nightcore.util.Randomizer;
+import su.nightexpress.nightcore.util.sound.VanillaSound;
 
 @NullMarked
 public class PickOneAnimation extends BaseAnimationInstance {
 
+    private static final VanillaSound SPIN_SOUND = VanillaSound.of(Sound.BLOCK_NOTE_BLOCK_HAT, 0.3f, 1.5f);
+    private static final VanillaSound LOCK_SOUND = VanillaSound.of(Sound.BLOCK_NOTE_BLOCK_PLING, 0.8f);
+
     private final CratesPlugin       plugin;
     private final CoreUIService      coreUI;
+    private final PickOneSettings    settings;
+    private final List<Reward>       choices;
     private final PickOneMenuContext menuContext;
 
+    private @Nullable Board board;
+    private int             revealTick;
+
     private volatile @Nullable Reward picked;
-    private volatile boolean          menuOpen;
 
     public PickOneAnimation(AnimationContext context,
                             Runnable onComplete,
@@ -36,8 +47,10 @@ public class PickOneAnimation extends BaseAnimationInstance {
         super(context, onComplete);
         this.plugin = plugin;
         this.coreUI = coreUI;
+        this.settings = settings;
+        this.choices = this.rollChoices(settings.choices());
         this.menuContext = new PickOneMenuContext(
-            this.rollChoices(settings.choices()), this.rewardPreview, this::pick, this::onMenuClose
+            this.choices, this.rewardPreview, this::onMenuShow, this::pick, this::onMenuClose
         );
     }
 
@@ -74,37 +87,73 @@ public class PickOneAnimation extends BaseAnimationInstance {
     @Override
     protected boolean onTick() {
         Reward picked = this.picked;
-        if (picked == null) return true;
+        if (picked == null) {
+            RegionTasks.runFor(this.plugin, this.player, this::tickReveal);
+            return true;
+        }
 
         this.reward.setGranted(picked);
         return false;
     }
 
+    private void tickReveal() {
+        Board board = this.board;
+        if (board == null || this.isRevealed()) return;
+
+        int[] slots = board.slots();
+        for (int index = 0; index < Math.min(slots.length, this.choices.size()); index++) {
+            int lockTick = this.lockTick(index);
+            Reward shown = this.revealTick < lockTick ? Randomizer.pick(this.availableRewards) : this.choices.get(index);
+
+            board.inventory().setItem(slots[index], PickOneMenu.createIcon(this.rewardPreview, shown).getItemStack());
+
+            if (this.revealTick == lockTick) {
+                LOCK_SOUND.play(this.player);
+            }
+        }
+
+        SPIN_SOUND.play(this.player);
+        this.revealTick++;
+    }
+
+    private int lockTick(int index) {
+        return this.settings.spinTicks() + index * Math.max(0, this.settings.lockIntervalTicks());
+    }
+
+    private boolean isRevealed() {
+        return this.revealTick > this.lockTick(this.choices.size() - 1);
+    }
+
     private void openMenu() {
         if (!this.isRunning() || this.picked != null) return;
 
-        this.menuOpen = this.coreUI.openMenu(this.player, PickOneUIKeys.MENU_PICK, this.menuContext).success();
-
-        if (!this.menuOpen) {
+        if (!this.coreUI.openMenu(this.player, PickOneUIKeys.MENU_PICK, this.menuContext).success()) {
             this.picked = this.reward.getGranted();
         }
     }
 
     private void closeMenu() {
-        if (this.menuOpen) {
+        if (this.board != null) {
             this.player.closeInventory();
         }
     }
 
-    private void pick(Reward reward) {
-        if (this.picked != null) return;
+    private boolean pick(Reward reward) {
+        if (this.picked != null || !this.isRevealed()) return false;
 
         this.picked = reward;
         RegionTasks.runFor(this.plugin, this.player, this::closeMenu);
+        return true;
+    }
+
+    private void onMenuShow(Board board) {
+        this.board = board;
+        // Covers the real choices the menu has just drawn before the player can see them.
+        this.tickReveal();
     }
 
     private void onMenuClose() {
-        this.menuOpen = false;
+        this.board = null;
         this.plugin.runTask(this.player, this::openMenu);
     }
 }

@@ -28,6 +28,7 @@ import su.nightexpress.nightcore.ui.inventory.item.ItemState;
 import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.item.populator.SlotPattern;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
+import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.sound.VanillaSound;
 
 @NullMarked
@@ -81,11 +82,10 @@ public class PickOneMenu extends RegionSafeObjectMenu<PickOneMenuContext> {
 
         for (int index = 0; index < Math.min(slots.length, choices.size()); index++) {
             Reward reward = choices.get(index);
-            NameAndLore info = preview.getDisplayInfo(reward);
 
             items.add(MenuItem.custom()
                 .defaultState(ItemState.builder()
-                    .icon(preview.createPreviewIcon(reward).setDisplayName(info.name()).setLore(info.lore()))
+                    .icon(createIcon(preview, reward))
                     .action(ctx -> this.onPickClick(ctx, reward))
                     .build()
                 )
@@ -95,9 +95,16 @@ public class PickOneMenu extends RegionSafeObjectMenu<PickOneMenuContext> {
         }
     }
 
+    public static NightItem createIcon(RewardPreviewAPI preview, Reward reward) {
+        NameAndLore info = preview.getDisplayInfo(reward);
+
+        return preview.createPreviewIcon(reward).setDisplayName(info.name()).setLore(info.lore());
+    }
+
     private void onPickClick(ActionContext context, Reward reward) {
-        this.getObject(context).onPick().accept(reward);
-        this.pickSound.play(context.getPlayer());
+        if (this.getObject(context).onPick().test(reward)) {
+            this.pickSound.play(context.getPlayer());
+        }
     }
 
     @Override
@@ -127,7 +134,10 @@ public class PickOneMenu extends RegionSafeObjectMenu<PickOneMenuContext> {
 
     @Override
     public void onReady(ViewerContext context, InventoryView view, Inventory inventory) {
+        PickOneMenuContext menuContext = this.getObject(context);
+        int[] slots = this.choiceSlots.getSlots(menuContext.choices().size());
 
+        menuContext.onShow().accept(new PickOneMenuContext.Board(inventory, slots));
     }
 
     @Override
